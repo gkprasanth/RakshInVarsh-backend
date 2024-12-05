@@ -3,10 +3,18 @@ const Razorpay = require("razorpay");
 const cors = require("cors");
 const crypto = require("crypto");
 require("dotenv").config();
+const bodyParser = require('body-parser');
 
 const app = express();
 const PORT = 5000
+const twilio = require('twilio');
+app.use(bodyParser.json());
 
+
+const accountSid = 'ACdc2ca2eb6269151b9d41840efdf81f87';
+const authToken = '455a08e9dbf1ddda241f689c03f20eba';
+const twilioClient = twilio(accountSid, authToken);
+const twilioPhoneNumber = '+17754774773';
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -52,6 +60,31 @@ app.post("/order/validate", async (req, res) => {
     paymentId: razorpay_payment_id,
   });
 });
+
+
+
+app.post('/api/sendOtp', async (req, res) => {
+    const { mobileNumber } = req.body;
+    
+    // Generate a random OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+  
+    try {
+      // Send OTP using Twilio
+      const message = await twilioClient.messages.create({
+        body: `Your OTP is ${otp}`,
+        from: twilioPhoneNumber,
+        to: mobileNumber,
+      });
+  
+      // For demonstration, return OTP in response (normally, you wouldn't return the OTP)
+      res.json({ otp });
+  
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      res.status(500).send({ message: 'Failed to send OTP' });
+    }
+  });
 
 
 app.listen(PORT, () => {
