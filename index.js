@@ -7,18 +7,68 @@ const bodyParser = require('body-parser');
 
 const app = express();
 const PORT = 5000
-const twilio = require('twilio');
 app.use(bodyParser.json());
+const twilio = require('twilio');
 
 
 const accountSid = 'ACdc2ca2eb6269151b9d41840efdf81f87';
 const authToken = '455a08e9dbf1ddda241f689c03f20eba';
-const twilioClient = twilio(accountSid, authToken);
+const twilioClient = twilio('ACdc2ca2eb6269151b9d41840efdf81f87', 'b3f281fec5e04342356da6af24c1f191');
 const twilioPhoneNumber = '+17754774773';
+const toNumber = '+919502330951'
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
+
+
+const sendSms = async (to, body) => {
+    let smsOptions = {
+        from: twilioPhoneNumber,
+        to: toNumber,
+        body,
+    };
+
+    try {
+        const message = await twilioClient.messages.create(smsOptions);
+        console.log("SMS sent successfully:", message.sid); // Log the success
+    } catch (err) {
+        console.error("Error sending SMS:", err);
+    }
+};
+
+// Change endpoint to POST
+app.post('/api/sendOtp', async (req, res) => {
+    const { mobileNumber } = req.body;
+
+    // Validate mobile number
+    if (!mobileNumber) {
+        return res.status(400).json({ message: 'Mobile number is required' });
+    }
+
+    // Generate a random OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+    try {
+        // Send the OTP
+        await sendSms(mobileNumber, `Your OTP is ${otp}`);
+
+        res.json({ message: 'OTP sent successfully' });
+    } catch (error) {
+        console.error('Error sending OTP:', error);
+        res.status(500).send({ message: 'Failed to send OTP' });
+    }
+});
+
+
+
+
+
+
+
+
+
+
 
 app.post("/order", async (req, res) => {
   try {
@@ -60,31 +110,6 @@ app.post("/order/validate", async (req, res) => {
     paymentId: razorpay_payment_id,
   });
 });
-
-
-
-app.post('/api/sendOtp', async (req, res) => {
-    const { mobileNumber } = req.body;
-    
-    // Generate a random OTP
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
-  
-    try {
-      // Send OTP using Twilio
-      const message = await twilioClient.messages.create({
-        body: `Your OTP is ${otp}`,
-        from: twilioPhoneNumber,
-        to: mobileNumber,
-      });
-  
-      // For demonstration, return OTP in response (normally, you wouldn't return the OTP)
-      res.json({ otp });
-  
-    } catch (error) {
-      console.error('Error sending OTP:', error);
-      res.status(500).send({ message: 'Failed to send OTP' });
-    }
-  });
 
 
 app.listen(PORT, () => {
