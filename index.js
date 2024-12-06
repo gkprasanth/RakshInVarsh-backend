@@ -15,7 +15,7 @@ const accountSid = 'ACdc2ca2eb6269151b9d41840efdf81f87';
 const authToken = '455a08e9dbf1ddda241f689c03f20eba';
 const twilioClient = twilio('ACdc2ca2eb6269151b9d41840efdf81f87', 'b3f281fec5e04342356da6af24c1f191');
 const twilioPhoneNumber = '+17754774773';
-const toNumber = '+919502330951'
+const toNumber = '+919054364456'
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -51,7 +51,7 @@ app.post('/api/sendOtp', async (req, res) => {
 
     try {
         // Send the OTP
-        await sendSms(mobileNumber, `Your OTP is ${otp}`);
+        await sendSms(mobileNumber, `Your OTP is 5805`);
 
         res.json({ message: 'OTP sent successfully' });
     } catch (error) {
